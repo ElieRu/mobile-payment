@@ -154,7 +154,7 @@
                 </select>
               </div>
             </div>
-            <div class="border rounded d-flex align-items-center mb-2" style="width: 100%">
+            <div class="border rounded d-flex align-items-center" style="width: 100%">
               <div
                 class="d-flex"
                 style="
@@ -188,7 +188,8 @@
                 v-model="form.amount"
               />
             </div>
-            <div>
+            <span v-if="error" style="color: red; font-size: 13px;">Invalid form</span>
+            <div class="mt-2">
               <button
                 class="btn btn-primary border-0 shadow"
                 type="submit"
@@ -245,20 +246,68 @@ export default {
   },
   data() {
     return {
+      error: false,
+      errors: [],
       disabled: false,
       form: {
-        first_name: 'elie',
-        last_name: 'ruhamya',
-        email: 'elieruhamya20@gmail.com',
-        phone_number: '979411354',
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone_number: '',
         operator: 'CD_AIRTELMONEY',
         amount: 5000
-      }
+      },
+      payment: Object
     }
   },
   methods: {
+    validEmail (email) {
+      var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(email);
+    },
+
     submit() {
-      this.disabled = true
+      this.errors = []
+
+      if (!this.form.first_name) {
+        this.errors.push("first name required")
+      }
+
+      if (!this.form.last_name) {
+        this.errors.push("last name required")
+      }
+
+      if (!this.form.email) {
+        this.errors.push("email required")
+      } else if (!this.validEmail(this.form.email)) {
+        this.errors.push("valid email required")
+      }
+
+      if (!this.form.phone_number) {
+        this.errors.push("phone required")
+      }
+
+      if (!this.form.operator) {
+        this.errors.push("operator required")
+      }
+
+      if (!this.form.amount) {
+        this.errors.push("amount required")
+      }
+
+      if (this.errors.length) {
+        this.error = true
+      } else {
+        this.error = false
+      } 
+
+      if (!this.error) {
+        this.disabled = true
+        this.myPayment()
+      }
+    },
+
+    myPayment() {
       axios
         .post('https://api.monetbil.com/payment/v1/placePayment', {
           service: 'WB1iADpNSjIsgDEnlulPf4DkIq4ARZiT',
@@ -271,6 +320,27 @@ export default {
           email: this.form.email,
           notify_url: 'https://your.server.com/monetbil/notifications',
           operator: this.form.operator
+        })
+        .then((res) => {
+          if (res.status == 200) {
+            this.payment = res.data
+            // console.log(this.payment)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      // check the payment
+      // if (this.payment.status == 'REQUEST_ACCEPTED') {
+
+      // }
+    },
+
+    ckeckPayment() {
+      axios
+        .post('https://api.monetbil.com/payment/v1/checkPayment', {
+          paymentId: this.payment.paymentId
         })
         .then((res) => {
           console.log(res)
