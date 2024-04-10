@@ -8,7 +8,7 @@
         <div class="border rounded border-0" style="font-weight: bold">
           <div class="d-flex align-items-center">
             <span style="color: #013854; text-decoration: underline; font-family: Inter, sans-serif"
-              >MPay</span
+              >MobilePay</span
             >
           </div>
         </div>
